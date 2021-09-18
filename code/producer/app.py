@@ -10,12 +10,10 @@ messages = ['hola', 'mundo']
 
 @app.get('/', response_class=HTMLResponse)
 def index(request: Request):
-  print('get')
   return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 
 @app.post('/', response_class=HTMLResponse)
 def submitMessage(request: Request, message: str=Form(...)):
-  print('adasd', message)
   return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 
 
