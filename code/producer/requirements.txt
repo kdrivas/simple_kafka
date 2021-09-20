@@ -1,3 +1,6 @@
 fastapi
 jinja2
 aiofiles
+uvicorn
+kafka-python
+python-multipart

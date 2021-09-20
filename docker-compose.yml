@@ -3,15 +3,57 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper
     ports: 
-      - "2181:2181"
+      - 2181:2181
+
   kafka:
     image: wurstmeister/kafka
     ports:
-      - "9092:9092"
+      - 9092:9092
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"
-      KAFKA_CREATE_TOPICS: "test:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CREATE_TOPICS: test:1:1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - 8080:8080
+    restart: always
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on: 
+      - kafka
+      
+  producer:
+    build:
+      context: code/producer
+      dockerfile: ../../Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      KAFKA_SERVER: kafka
+      KAFKA_PORT: 9092
+      KAFKA_TOPIC: test
+    depends_on: 
+      - kafka
+
+  consumer:
+    build:
+      context: code/consumer
+      dockerfile: ../../Dockerfile
+    command: ["python", "app.py"]
+    environment:
+      KAFKA_SERVER: kafka
+      KAFKA_PORT: 9092
+      KAFKA_TOPIC: test
+      PRODUCER_ENDPOINT: producer:8000
+    depends_on: 
+      - kafka
+
+  
   

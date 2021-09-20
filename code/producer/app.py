@@ -12,9 +12,10 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 messages = ['hola', 'mundo']
 
-KAFKA_SERVER = os.getenv('KAFKA_SERVER', 'kafka')
-KAFKA_PORT = os.getenv('KAFKA_SERVER', 'kafka')
+KAFKA_SERVER = os.getenv('KAFKA_SERVER')
+KAFKA_PORT = os.getenv('KAFKA_PORT')
 KAFKA_CONN = KAFKA_SERVER + ":" + KAFKA_PORT
+KAFKA_TOPIC = os.getenv('KAFKA_TOPIC')
 
 def on_send_success(r):
   print('success')
@@ -27,7 +28,7 @@ def get_kafka_conn_object(timeout=3000):
     time.sleep(3)
     try:
       return KafkaProducer(bootstrap_servers=KAFKA_CONN, 
-                          value_serializer=lambda x: json.dups(x).encode('utf-8'),
+                          value_serializer=lambda x: json.dumps(x).encode('utf-8'),
                           retries=5)
     except:
       print('Waiting kafka producer')
@@ -42,9 +43,14 @@ def index(request: Request):
 @app.post('/', response_class=HTMLResponse)
 def submit_messages(request: Request, message: str=Form(...)):
   # test is the name of the topic
-  kafka_prod.sent('test', json.dumps(str(message))).add_callback(on_send_success).add_errback(on_send_error)
+  print('This is your input message', message)
+  kafka_prod.send(KAFKA_TOPIC, json.dumps(str(message))).add_callback(on_send_success).add_errback(on_send_error)
   kafka_prod.flush()
   return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 
-
+@app.post('/messages', response_class=HTMLResponse)
+def pull_message_from_consumer(request: Request):
+  print('new request', request)
+  messages.append('new_message')
+  return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 

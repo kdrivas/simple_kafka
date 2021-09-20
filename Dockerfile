@@ -1,7 +1,7 @@
 FROM python:3.8-slim-buster
 ENV PYTHONUNBUFFERED=0
 WORKDIR /app
-COPY requeriements.txt .
-RUN pip install -r requeriements.txt
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 COPY . .
-CMD cd app && uvicorn app:app --host 0.0.0.0
+CMD uvicorn app:app --host 0.0.0.0
