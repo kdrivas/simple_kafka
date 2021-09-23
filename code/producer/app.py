@@ -10,7 +10,7 @@ import json
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
-messages = ['hola', 'mundo']
+messages = []
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')
 KAFKA_PORT = os.getenv('KAFKA_PORT')
@@ -49,8 +49,8 @@ def submit_messages(request: Request, message: str=Form(...)):
   return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 
 @app.post('/messages', response_class=HTMLResponse)
-def pull_message_from_consumer(request: Request):
-  print('new request', request)
-  messages.append('new_message')
+async def pull_message_from_consumer(request: Request):
+  body = await request.json()
+  messages.append(body['message'])
   return templates.TemplateResponse("producer.html", {"request": request, "messages": messages})
 

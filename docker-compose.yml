@@ -52,8 +52,10 @@ services:
       KAFKA_PORT: 9092
       KAFKA_TOPIC: test
       PRODUCER_ENDPOINT: producer:8000
+      PRODUCER_ROUTE: messages
     depends_on: 
       - kafka
+      - producer
 
   
   
